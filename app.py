@@ -698,38 +698,48 @@ def book_space_route(space_id):
 
 @app.route('/event/<int:event_id>/book', methods=['POST'])
 def book_event_route(event_id):
-    user_id = session.get('user_id')  # Get the logged-in user's ID
+    # Check if the user is logged in
+    user_id = session.get('user_id')
     if not user_id:
+        app.logger.error("Booking failed: user is not logged in.")
         flash("Please log in to book this event.", "error")
         return redirect(url_for('login'))
 
-    # Check if the event exists
+    # Verify if the event exists
     event = get_event_by_id(event_id)
     if not event:
+        app.logger.error(f"Booking failed: event with ID {event_id} does not exist.")
         flash("Event not found.", "error")
         return redirect(url_for('list_events'))
 
-    # Check if the user has already booked the event
-    db = get_db()
-    already_booked = db.execute(
-        "SELECT 1 FROM event_bookings WHERE user_id = ? AND event_id = ?",
-        (user_id, event_id)
-    ).fetchone()
-
-    if already_booked:
-        flash("You have already booked this event.", "info")
-        return redirect(url_for('view_event', event_id=event_id))
-
-    # Book the event
     try:
+        # Check if the user has already booked the event
+        db = get_db()
+        already_booked = db.execute(
+            "SELECT 1 FROM event_bookings WHERE user_id = ? AND event_id = ?",
+            (session.get('user_id'), event_id)
+        ).fetchone() is not None
+
+        if already_booked:
+            app.logger.info(f"User {user_id} has already booked event {event_id}.")
+            flash("You have already booked this event.", "info")
+            return redirect(url_for('view_event', event_id=event_id))
+
+        # Book the event
         booking_date = datetime.now().strftime('%Y-%m-%d')
-        book_event(user_id, event_id, booking_date)  # Call the helper function
+        book_event(user_id, event_id, booking_date)
+
+        app.logger.info(f"Event {event_id} successfully booked by user {user_id}.")
         flash("Event booked successfully!", "success")
-    except Exception as e:
-        app.logger.error(f"Error booking event: {e}")
+    except sqlite3.IntegrityError as e:
+        app.logger.error(f"Database integrity error during booking: {e}")
         flash("An error occurred while booking the event. Please try again.", "error")
+    except Exception as e:
+        app.logger.error(f"Unexpected error during booking: {e}")
+        flash("An unexpected error occurred. Please try again.", "error")
 
     return redirect(url_for('view_event', event_id=event_id))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
