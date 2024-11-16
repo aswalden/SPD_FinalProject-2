@@ -9,7 +9,8 @@ from database import (
     create_resource, get_recent_resources, get_resource_by_id, send_message, update_resource,
     delete_resource, get_all_resources, get_top_reviews, get_conversation, get_inbox, 
     create_space, get_all_spaces, get_space_by_id, create_event, get_all_events, get_event_by_id,
-    get_db, get_resources_by_user, get_events_by_user, get_spaces_by_user
+    get_db, get_resources_by_user, get_events_by_user, get_spaces_by_user,
+    
 )
 
 app = Flask(__name__)
@@ -354,9 +355,9 @@ def new_space():
 
     return render_template('new_space.html')
 
-@app.route('/space/<int:space_id>/book', methods=['POST'])
-def book_space(space_id):
-    user_id = session.get('user_id')
+#@app.route('/space/<int:space_id>/book', methods=['POST'])
+#def book_space(space_id):
+#    user_id = session.get('user_id')
     if not user_id:
         flash("Please log in to book a space.", "error")
         return redirect(url_for('login'))
@@ -549,7 +550,6 @@ def delete_event(event_id):
 
     flash("Event deleted successfully.", "success")
     return redirect(url_for('list_events'))
-
 
 
 if __name__ == '__main__':

@@ -247,7 +247,7 @@ def get_all_events():
     return get_db().execute("SELECT * FROM events").fetchall()
 
 def get_event_by_id(event_id):
-    return get_db().execute("SELECT * FROM events WHERE event_id = ?", (event_id,)).fetchone()
+    return get_db().execute("SELECT event_id, name, description, date, location FROM events WHERE event_id = ?", (event_id,)).fetchone()
 
 def get_resources_by_user(user_id):
     """
