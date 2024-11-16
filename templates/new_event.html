@@ -15,9 +15,7 @@
             </div>
         {% endfor %}
     {% endif %}
-{% endwith %}
-
-
+    {% endwith %}
 
     <form action="{{ url_for('new_event') }}" method="POST" autocomplete="off" class="needs-validation" novalidate>
         <div class="mb-3">
@@ -30,9 +28,9 @@
 
         <div class="mb-3">
             <label for="date" class="form-label">Event Date</label>
-            <input type="date" id="date" name="date" class="form-control" required>
+            <input type="text" id="date" name="date" class="form-control" required pattern="\d{4}-\d{2}-\d{2}">
             <div class="invalid-feedback">
-                Please select a date for the event.
+                Please select a valid date in the format YYYY-MM-DD.
             </div>
         </div>
 
@@ -55,4 +53,30 @@
         </div>
     </form>
 </div>
+
+<!-- Datepicker Initialization -->
+<script>
+    $(document).ready(function () {
+        $('#date').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true
+        });
+    });
+
+    // Additional JavaScript validation
+    document.querySelector('form').addEventListener('submit', function (event) {
+        const dateInput = document.getElementById('date');
+        const dateValue = dateInput.value;
+        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+        if (!datePattern.test(dateValue)) {
+            dateInput.setCustomValidity("Please provide a valid date in the format YYYY-MM-DD.");
+            dateInput.reportValidity();
+            event.preventDefault(); // Stop form submission
+        } else {
+            dateInput.setCustomValidity(""); // Reset custom validation message
+        }
+    });
+</script>
 {% endblock %}

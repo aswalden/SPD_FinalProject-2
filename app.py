@@ -4,13 +4,14 @@ from config import DevelopmentConfig, ProductionConfig
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
+from datetime import datetime
 from database import (
     init_db, close_db, create_user, get_user_by_email, get_user_by_id,
     create_resource, get_recent_resources, get_resource_by_id, send_message, update_resource,
     delete_resource, get_all_resources, get_top_reviews, get_conversation, get_inbox, 
     create_space, get_all_spaces, get_space_by_id, create_event, get_all_events, get_event_by_id,
     get_db, get_resources_by_user, get_events_by_user, get_spaces_by_user,
-    
+
 )
 
 app = Flask(__name__)
@@ -153,11 +154,20 @@ def new_resource():
         category = request.form.get('category')
         availability = request.form.get('availability')
 
+        # Check if required fields are missing
         if not title or not category or not availability:
             flash('All fields are required.', 'error')
             return redirect(url_for('new_resource'))
 
+        # Validate date format (YYYY-MM-DD)
         try:
+            datetime.strptime(availability, '%Y-%m-%d')
+        except ValueError:
+            flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
+            return redirect(url_for('new_resource'))
+
+        try:
+            # Save the resource
             create_resource(user_id, title, description, category, availability)
             flash('Resource added successfully!', 'success')
             return redirect(url_for('list_resources'))
@@ -342,16 +352,40 @@ def view_space(space_id):
 
 @app.route('/space/new', methods=['GET', 'POST'])
 def new_space():
+    # Ensure user is logged in
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("Please log in to list a new community space.", "error")
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
+        # Gather form inputs
         name = request.form['name']
         description = request.form.get('description', '')
         location = request.form['location']
         availability = request.form['availability']
-        created_by = session.get('user_id')
 
-        create_space(name, description, location, availability, created_by)
-        flash('Space listed successfully!', 'success')
-        return redirect(url_for('list_spaces'))
+        # Validate required fields
+        if not name or not location or not availability:
+            flash("Name, location, and availability are required.", "error")
+            return redirect(url_for('new_space'))
+
+        # Validate availability format (YYYY-MM-DD)
+        try:
+            datetime.strptime(availability, '%Y-%m-%d')
+        except ValueError:
+            flash("Invalid availability date format. Please use YYYY-MM-DD.", "error")
+            return redirect(url_for('new_space'))
+
+        try:
+            # Create the space in the database
+            create_space(name, description, location, availability, user_id)
+            flash("Space listed successfully!", "success")
+            return redirect(url_for('list_spaces'))
+        except Exception as e:
+            app.logger.error(f"Error listing space: {e}")
+            flash("An error occurred while listing the space. Please try again.", "error")
+            return redirect(url_for('new_space'))
 
     return render_template('new_space.html')
 
@@ -444,6 +478,8 @@ def view_event(event_id):
 
 
 
+from datetime import datetime
+
 @app.route('/event/new', methods=['GET', 'POST'])
 def new_event():
     # Ensure user is logged in
@@ -464,6 +500,13 @@ def new_event():
             flash("Name, date, and location are required to create an event.", "error")
             return redirect(url_for('new_event'))
 
+        # Validate date format (YYYY-MM-DD)
+        try:
+            datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            flash("Invalid date format. Please use YYYY-MM-DD.", "error")
+            return redirect(url_for('new_event'))
+
         try:
             # Create the event in the database
             create_event(name, description, date, location, user_id)
@@ -476,6 +519,7 @@ def new_event():
 
     # Render the form to create a new event
     return render_template('new_event.html')
+
 
 @app.route('/event/<int:event_id>/edit', methods=['GET', 'POST'])
 def edit_event(event_id):
