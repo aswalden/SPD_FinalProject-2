@@ -305,11 +305,21 @@ def get_spaces_by_user(user_id):
 # Resource booking functions
 def book_resource(user_id, resource_id, booking_date):
     db = get_db()
-    db.execute(
-        "INSERT INTO resource_bookings (user_id, resource_id, booking_date) VALUES (?, ?, ?)",
-        (user_id, resource_id, booking_date)
-    )
-    db.commit()
+    try:
+        print(f"Attempting to book resource: user_id={user_id}, resource_id={resource_id}, booking_date={booking_date}")
+        db.execute(
+            "INSERT INTO resource_bookings (user_id, resource_id, booking_date) VALUES (?, ?, ?)",
+            (user_id, resource_id, booking_date)
+        )
+        db.commit()
+        print(f"Booking successful for user_id={user_id}, resource_id={resource_id}.")
+    except sqlite3.IntegrityError as e:
+        print(f"Integrity error in book_resource: {e}")
+        raise Exception(f"Integrity error in book_resource: {e}")
+    except Exception as e:
+        print(f"Unexpected error in book_resource: {e}")
+        raise Exception(f"Unexpected error in book_resource: {e}")
+
 
 def get_resource_bookings_by_user(user_id):
     return get_db().execute(
@@ -320,11 +330,21 @@ def get_resource_bookings_by_user(user_id):
 # Space booking functions
 def book_space(user_id, space_id, booking_date):
     db = get_db()
-    db.execute(
-        "INSERT INTO space_bookings (user_id, space_id, booking_date) VALUES (?, ?, ?)",
-        (user_id, space_id, booking_date)
-    )
-    db.commit()
+    try:
+        print(f"Attempting to book space: user_id={user_id}, space_id={space_id}, booking_date={booking_date}")
+        db.execute(
+            "INSERT INTO space_bookings (user_id, space_id, booking_date) VALUES (?, ?, ?)",
+            (user_id, space_id, booking_date)
+        )
+        db.commit()
+        print(f"Booking successful for user_id={user_id}, space_id={space_id}.")
+    except sqlite3.IntegrityError as e:
+        print(f"Integrity error in book_space: {e}")
+        raise Exception(f"Integrity error in book_space: {e}")
+    except Exception as e:
+        print(f"Unexpected error in book_space: {e}")
+        raise Exception(f"Unexpected error in book_space: {e}")
+
 
 def get_space_bookings_by_user(user_id):
     return get_db().execute(
