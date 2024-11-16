@@ -246,11 +246,20 @@ def inbox():
         flash("Please log in to view your inbox.", "error")
         return redirect(url_for('login'))
 
-    app.logger.info(f"Fetching inbox for user ID: {user_id}")
-    conversations = get_inbox(user_id)
-    app.logger.info(f"Retrieved conversations: {conversations}")
+    # Handle GET for search
+    search_query = request.args.get('search_recipient', '').strip()
+    recipients = []
+    if search_query:
+        recipients = get_db().execute(
+            "SELECT id, name FROM users WHERE name LIKE ? LIMIT 10",
+            (f"%{search_query}%",)
+        ).fetchall()
 
-    return render_template('inbox.html', conversations=conversations)
+    # Fetch conversations
+    conversations = get_inbox(user_id)
+
+    return render_template('inbox.html', conversations=conversations, recipients=recipients)
+
 
 @app.route('/search_users', methods=['GET'])
 def search_users():

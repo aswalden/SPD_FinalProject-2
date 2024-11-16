@@ -162,7 +162,6 @@ def send_message(sender_id, receiver_id, content):
     """Send a new message."""
     conn = get_db()
     try:
-        app.logger.info(f"Attempting to send message: sender={sender_id}, receiver={receiver_id}, content={content}")
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -172,9 +171,7 @@ def send_message(sender_id, receiver_id, content):
             (sender_id, receiver_id, content)
         )
         conn.commit()
-        app.logger.info("Message inserted successfully.")
     except Exception as e:
-        app.logger.error(f"Error inserting message: {e}")
         raise  # Reraise the exception for debugging
     finally:
         conn.close()
@@ -194,10 +191,8 @@ def get_inbox(user_id):
             ORDER BY last_message DESC
         """, (user_id, user_id, user_id))
         conversations = cursor.fetchall()
-        app.logger.info(f"Conversations for user {user_id}: {conversations}")
         return conversations
     except Exception as e:
-        app.logger.error(f"Error retrieving inbox: {e}")
         raise
     finally:
         conn.close()
@@ -216,10 +211,8 @@ def get_conversation(sender_id, receiver_id):
             ORDER BY m.timestamp
         """, (sender_id, receiver_id, receiver_id, sender_id))
         messages = cursor.fetchall()
-        app.logger.info(f"Messages between {sender_id} and {receiver_id}: {messages}")
         return messages
     except Exception as e:
-        app.logger.error(f"Error retrieving conversation: {e}")
         raise
     finally:
         conn.close()

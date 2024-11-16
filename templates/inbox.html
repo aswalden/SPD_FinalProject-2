@@ -29,12 +29,27 @@
         <!-- Send a New Message Section -->
         <div class="col-md-4">
             <h4>Send a New Message</h4>
-            <form action="{{ url_for('send_message_route', receiver_id=receiver.id) }}" method="POST" class="needs-validation" novalidate>
+
+            <!-- Search Form -->
+            <form action="{{ url_for('inbox') }}" method="GET" class="mb-3">
+                <label for="search_recipient" class="form-label">Search for Recipient</label>
+                <input type="text" id="search_recipient" name="search_recipient" class="form-control" 
+                       placeholder="Enter recipient's name" value="{{ request.args.get('search_recipient', '') }}">
+                <button type="submit" class="btn btn-secondary mt-2 w-100">Search</button>
+            </form>
+
+            {% if recipients %}
+            <!-- Recipient Selection and Message Form -->
+            <form id="messageForm" action="{{ url_for('send_message_route', receiver_id=0) }}" method="POST" class="needs-validation" novalidate>
                 <div class="mb-3">
-                    <label for="receiver_name" class="form-label">Recipient</label>
-                    <input type="text" id="receiver_name" name="receiver_name" class="form-control" placeholder="Search recipient by name" required>
-                    <input type="hidden" id="receiver_id" name="receiver_id">
-                    <ul id="autocomplete-list" class="list-group mt-2"></ul>
+                    <label for="receiver_id" class="form-label">Select Recipient</label>
+                    <select id="receiver_id" name="receiver_id" class="form-control" required>
+                        <option value="">-- Select a recipient --</option>
+                        {% for recipient in recipients %}
+                        <option value="{{ recipient.id }}">{{ recipient.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Please select a recipient.</div>
                 </div>
                 <div class="mb-3">
                     <label for="content" class="form-label">Message</label>
@@ -43,62 +58,38 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Send Message</button>
             </form>            
+            {% endif %}
+
+            {% if not recipients and request.args.get('search_recipient') %}
+            <p class="text-muted">No recipients found. Please refine your search.</p>
+            {% endif %}
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const receiverNameInput = document.getElementById('receiver_name');
-    const receiverIdInput = document.getElementById('receiver_id');
-    const autocompleteList = document.getElementById('autocomplete-list');
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("messageForm");
+        const receiverSelect = document.getElementById("receiver_id");
 
-    receiverNameInput.addEventListener('input', async function() {
-        const query = receiverNameInput.value;
+        form.addEventListener("submit", function (event) {
+            if (receiverSelect.value === "") {
+                event.preventDefault(); // Prevent form submission
+                receiverSelect.classList.add("is-invalid"); // Highlight the error
+            } else {
+                // Update the form action URL dynamically with a valid receiver_id
+                const baseUrl = "{{ url_for('send_message_route', receiver_id=0) }}";
+                form.action = baseUrl.replace("0", receiverSelect.value);
+            }
+        });
 
-        if (query.length < 2) {
-            autocompleteList.innerHTML = ''; // Clear suggestions
-            return;
-        }
-
-        // Fetch matching users from the server
-        const response = await fetch(`/search_users?q=${encodeURIComponent(query)}`);
-        const results = await response.json();
-
-        // Display suggestions
-        autocompleteList.innerHTML = '';
-        results.forEach(user => {
-            const item = document.createElement('li');
-            item.className = 'list-group-item list-group-item-action';
-            item.textContent = user.name;
-            item.dataset.userId = user.id;
-
-            item.addEventListener('click', function() {
-                receiverNameInput.value = user.name;
-                receiverIdInput.value = user.id;
-                autocompleteList.innerHTML = ''; // Clear suggestions
-            });
-
-            autocompleteList.appendChild(item);
+        // Remove error styling when a valid recipient is selected
+        receiverSelect.addEventListener("change", function () {
+            if (receiverSelect.value !== "") {
+                receiverSelect.classList.remove("is-invalid");
+            }
         });
     });
-
-    // Validate before submitting the form
-    document.querySelector('form').addEventListener('submit', function(event) {
-        if (!receiverIdInput.value) {
-            event.preventDefault();
-            alert("Please select a recipient from the suggestions.");
-        }
-    });
-
-    // Close suggestions if clicking outside the input
-    document.addEventListener('click', function(event) {
-        if (!autocompleteList.contains(event.target) && event.target !== receiverNameInput) {
-            autocompleteList.innerHTML = '';
-        }
-    });
-});
 </script>
+
 {% endblock %}

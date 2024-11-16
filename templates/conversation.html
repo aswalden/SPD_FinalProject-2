@@ -23,7 +23,7 @@
         {% endif %}
     </div>
 
-    <form action="{{ url_for('send_message', receiver_id=receiver.id) }}" method="POST" class="needs-validation" novalidate>
+    <form action="{{ url_for('send_message_route', receiver_id=receiver.id) }}" method="POST" class="needs-validation" novalidate>
         <div class="mb-3">
             <label for="content" class="form-label">New Message</label>
             <textarea id="content" name="content" class="form-control" rows="3" required></textarea>
