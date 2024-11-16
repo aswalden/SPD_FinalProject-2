@@ -82,6 +82,32 @@ def init_db():
             hosted_by INTEGER NOT NULL,
             FOREIGN KEY (hosted_by) REFERENCES users (id) ON DELETE CASCADE
         );
+        CREATE TABLE IF NOT EXISTS resource_bookings (
+            booking_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            resource_id INTEGER NOT NULL,
+            booking_date TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+            FOREIGN KEY (resource_id) REFERENCES resources (resource_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS space_bookings (
+            booking_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            space_id INTEGER NOT NULL,
+            booking_date TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+            FOREIGN KEY (space_id) REFERENCES spaces (space_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS event_bookings (
+            booking_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            event_id INTEGER NOT NULL,
+            booking_date TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+            FOREIGN KEY (event_id) REFERENCES events (event_id) ON DELETE CASCADE
+        );
     ''')
     db.commit()
 
@@ -273,5 +299,50 @@ def get_spaces_by_user(user_id):
     """
     return get_db().execute(
         "SELECT * FROM spaces WHERE created_by = ?", 
+        (user_id,)
+    ).fetchall()
+
+# Resource booking functions
+def book_resource(user_id, resource_id, booking_date):
+    db = get_db()
+    db.execute(
+        "INSERT INTO resource_bookings (user_id, resource_id, booking_date) VALUES (?, ?, ?)",
+        (user_id, resource_id, booking_date)
+    )
+    db.commit()
+
+def get_resource_bookings_by_user(user_id):
+    return get_db().execute(
+        "SELECT rb.*, r.title FROM resource_bookings rb JOIN resources r ON rb.resource_id = r.resource_id WHERE rb.user_id = ?",
+        (user_id,)
+    ).fetchall()
+
+# Space booking functions
+def book_space(user_id, space_id, booking_date):
+    db = get_db()
+    db.execute(
+        "INSERT INTO space_bookings (user_id, space_id, booking_date) VALUES (?, ?, ?)",
+        (user_id, space_id, booking_date)
+    )
+    db.commit()
+
+def get_space_bookings_by_user(user_id):
+    return get_db().execute(
+        "SELECT sb.*, s.name FROM space_bookings sb JOIN spaces s ON sb.space_id = s.space_id WHERE sb.user_id = ?",
+        (user_id,)
+    ).fetchall()
+
+# Event booking functions
+def book_event(user_id, event_id, booking_date):
+    db = get_db()
+    db.execute(
+        "INSERT INTO event_bookings (user_id, event_id, booking_date) VALUES (?, ?, ?)",
+        (user_id, event_id, booking_date)
+    )
+    db.commit()
+
+def get_event_bookings_by_user(user_id):
+    return get_db().execute(
+        "SELECT eb.*, e.name FROM event_bookings eb JOIN events e ON eb.event_id = e.event_id WHERE eb.user_id = ?",
         (user_id,)
     ).fetchall()

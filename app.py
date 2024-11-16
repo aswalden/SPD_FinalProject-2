@@ -1,5 +1,6 @@
 # app.py
 import os
+import sqlite3
 from config import DevelopmentConfig, ProductionConfig
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify
 from werkzeug.security import check_password_hash
@@ -10,7 +11,8 @@ from database import (
     create_resource, get_recent_resources, get_resource_by_id, send_message, update_resource,
     delete_resource, get_all_resources, get_top_reviews, get_conversation, get_inbox, 
     create_space, get_all_spaces, get_space_by_id, create_event, get_all_events, get_event_by_id,
-    get_db, get_resources_by_user, get_events_by_user, get_spaces_by_user,
+    get_db, get_resources_by_user, get_events_by_user, get_spaces_by_user, book_resource, book_event,
+    book_space, get_event_bookings_by_user, get_resource_bookings_by_user, get_space_bookings_by_user
 
 )
 
@@ -482,11 +484,26 @@ def list_events():
 
 @app.route('/event/<int:event_id>')
 def view_event(event_id):
+    user_id = session.get('user_id')  # Get the logged-in user's ID
+    if not user_id:
+        flash("Please log in to view this event.", "error")
+        return redirect(url_for('login'))
+
+    # Fetch event details
     event = get_event_by_id(event_id)
     if not event:
         flash("Event not found.", "error")
         return redirect(url_for('list_events'))
-    return render_template('view_event.html', event=event)
+
+    # Check if the user has already booked the event
+    booked = get_db().execute(
+        "SELECT 1 FROM event_bookings WHERE user_id = ? AND event_id = ?",
+        (user_id, event_id)
+    ).fetchone() is not None
+
+    # Render the event with booking status
+    return render_template('view_event.html', event=event, booked=booked)
+
 
 
 
@@ -607,6 +624,112 @@ def delete_event(event_id):
     flash("Event deleted successfully.", "success")
     return redirect(url_for('list_events'))
 
+@app.route('/event/<int:event_id>/book', methods=['POST'])
+def book_event(event_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("Please log in to book this event.", "error")
+        return redirect(url_for('login'))
+
+    # Logic to save the booking in the database
+    try:
+        db = get_db()
+        db.execute(
+            "INSERT INTO event_bookings (event_id, user_id) VALUES (?, ?)",
+            (event_id, user_id)
+        )
+        db.commit()
+        flash("Successfully booked the event!", "success")
+    except sqlite3.IntegrityError:
+        flash("You have already booked this event.", "error")
+    except Exception as e:
+        app.logger.error(f"Error booking event: {e}")
+        flash("An error occurred while booking the event. Please try again.", "error")
+
+    return redirect(url_for('view_event', event_id=event_id))
+
+@app.route('/resource/<int:resource_id>/book', methods=['POST'])
+def book_resource_route(resource_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("Please log in to book this resource.", "error")
+        return redirect(url_for('login'))
+
+    # Check if the resource exists
+    resource = get_resource_by_id(resource_id)
+    if not resource:
+        flash("Resource not found.", "error")
+        return redirect(url_for('list_resources'))
+
+    booking_date = datetime.now().strftime('%Y-%m-%d')
+
+    try:
+        book_resource(user_id, resource_id, booking_date)
+        flash("Resource booked successfully!", "success")
+    except Exception as e:
+        app.logger.error(f"Error booking resource: {e}")
+        flash("An error occurred while booking the resource. Please try again.", "error")
+
+    return redirect(url_for('view_resource', id=resource_id))
+
+@app.route('/space/<int:space_id>/book', methods=['POST'])
+def book_space_route(space_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("Please log in to book this space.", "error")
+        return redirect(url_for('login'))
+
+    # Check if the space exists
+    space = get_space_by_id(space_id)
+    if not space:
+        flash("Space not found.", "error")
+        return redirect(url_for('list_spaces'))
+
+    booking_date = datetime.now().strftime('%Y-%m-%d')
+
+    try:
+        book_space(user_id, space_id, booking_date)
+        flash("Space booked successfully!", "success")
+    except Exception as e:
+        app.logger.error(f"Error booking space: {e}")
+        flash("An error occurred while booking the space. Please try again.", "error")
+
+    return redirect(url_for('view_space', space_id=space_id))
+
+@app.route('/event/<int:event_id>/book', methods=['POST'])
+def book_event_route(event_id):
+    user_id = session.get('user_id')  # Get the logged-in user's ID
+    if not user_id:
+        flash("Please log in to book this event.", "error")
+        return redirect(url_for('login'))
+
+    # Check if the event exists
+    event = get_event_by_id(event_id)
+    if not event:
+        flash("Event not found.", "error")
+        return redirect(url_for('list_events'))
+
+    # Check if the user has already booked the event
+    db = get_db()
+    already_booked = db.execute(
+        "SELECT 1 FROM event_bookings WHERE user_id = ? AND event_id = ?",
+        (user_id, event_id)
+    ).fetchone()
+
+    if already_booked:
+        flash("You have already booked this event.", "info")
+        return redirect(url_for('view_event', event_id=event_id))
+
+    # Book the event
+    try:
+        booking_date = datetime.now().strftime('%Y-%m-%d')
+        book_event(user_id, event_id, booking_date)  # Call the helper function
+        flash("Event booked successfully!", "success")
+    except Exception as e:
+        app.logger.error(f"Error booking event: {e}")
+        flash("An error occurred while booking the event. Please try again.", "error")
+
+    return redirect(url_for('view_event', event_id=event_id))
 
 if __name__ == '__main__':
     app.run(debug=True)
