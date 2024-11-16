@@ -127,13 +127,20 @@ def profile():
     events = get_events_by_user(user_id)
     spaces = get_spaces_by_user(user_id)
 
-    # Render the profile template with user-specific data
+    # Fetch bookings made by the user
+    resource_bookings = get_resource_bookings_by_user(user_id)
+    space_bookings = get_space_bookings_by_user(user_id)
+    event_bookings = get_event_bookings_by_user(user_id)
+
     return render_template(
         'profile.html',
         user=user,
         resources=resources,
         events=events,
-        spaces=spaces
+        spaces=spaces,
+        resource_bookings=resource_bookings,
+        space_bookings=space_bookings,
+        event_bookings=event_bookings
     )
 
 
@@ -624,29 +631,6 @@ def delete_event(event_id):
     flash("Event deleted successfully.", "success")
     return redirect(url_for('list_events'))
 
-@app.route('/event/<int:event_id>/book', methods=['POST'])
-def book_event(event_id):
-    user_id = session.get('user_id')
-    if not user_id:
-        flash("Please log in to book this event.", "error")
-        return redirect(url_for('login'))
-
-    # Logic to save the booking in the database
-    try:
-        db = get_db()
-        db.execute(
-            "INSERT INTO event_bookings (event_id, user_id) VALUES (?, ?)",
-            (event_id, user_id)
-        )
-        db.commit()
-        flash("Successfully booked the event!", "success")
-    except sqlite3.IntegrityError:
-        flash("You have already booked this event.", "error")
-    except Exception as e:
-        app.logger.error(f"Error booking event: {e}")
-        flash("An error occurred while booking the event. Please try again.", "error")
-
-    return redirect(url_for('view_event', event_id=event_id))
 
 @app.route('/resource/<int:resource_id>/book', methods=['POST'])
 def book_resource_route(resource_id):

@@ -332,23 +332,23 @@ def get_space_bookings_by_user(user_id):
         (user_id,)
     ).fetchall()
 
-# Event booking functions
 def book_event(user_id, event_id, booking_date):
     db = get_db()
     try:
-        app.logger.info(f"Attempting to book event: user_id={user_id}, event_id={event_id}, booking_date={booking_date}")
+        print(f"Attempting to book event: user_id={user_id}, event_id={event_id}, booking_date={booking_date}")
         db.execute(
             "INSERT INTO event_bookings (user_id, event_id, booking_date) VALUES (?, ?, ?)",
             (user_id, event_id, booking_date)
         )
         db.commit()
-        app.logger.info(f"Booking successful for user_id={user_id}, event_id={event_id}.")
+        print(f"Booking successful for user_id={user_id}, event_id={event_id}.")
     except sqlite3.IntegrityError as e:
-        app.logger.error(f"Integrity error in book_event: {e}")
-        raise
+        print(f"Integrity error in book_event: {e}")
+        raise Exception(f"Integrity error in book_event: {e}")
     except Exception as e:
-        app.logger.error(f"Unexpected error in book_event: {e}")
-        raise
+        print(f"Unexpected error in book_event: {e}")
+        raise Exception(f"Unexpected error in book_event: {e}")
+
 
 
 
