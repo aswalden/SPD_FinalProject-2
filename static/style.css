@@ -284,6 +284,44 @@ textarea.form-control:focus {
     background-color: #c9302c;
 }
 
+/* Background color for the entire calendar */
+.datepicker {
+    background-color: #f0f8ff; /* Light blue */
+    border: 1px solid #4b9cd3; /* Blue border */
+}
+
+/* Header color */
+.datepicker .datepicker-switch,
+.datepicker th {
+    background-color: #4b9cd3; /* Blue */
+    color: white; /* White text */
+}
+
+/* Hover effect for days */
+.datepicker .day:hover {
+    background-color: #4b9cd3; /* Blue */
+    color: white;
+}
+
+/* Selected day */
+.datepicker .day.active {
+    background-color: #1e90ff; /* Dodger blue */
+    color: white;
+}
+
+/* Today */
+.datepicker .today {
+    background-color: #87ceeb; /* Sky blue */
+    color: white;
+    border-radius: 50%;
+}
+
+/* Disable days (if any) */
+.datepicker .disabled {
+    background-color: #e9ecef; /* Gray */
+    color: #6c757d; /* Text muted */
+    cursor: not-allowed;
+}
 
 
 /* Responsive Layout */
