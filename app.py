@@ -18,6 +18,7 @@ app = Flask(__name__)
 
 # Configuration for file uploads
 UPLOAD_FOLDER = 'static/uploads/profile_images'
+UPLOAD_FOLDER = 'static/uploads/resources'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -153,8 +154,9 @@ def new_resource():
         description = request.form.get('description', '')
         category = request.form.get('category')
         availability = request.form.get('availability')
+        image = request.files.get('image')
 
-        # Check if required fields are missing
+        # Validate required fields
         if not title or not category or not availability:
             flash('All fields are required.', 'error')
             return redirect(url_for('new_resource'))
@@ -166,9 +168,19 @@ def new_resource():
             flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
             return redirect(url_for('new_resource'))
 
+        # Validate and save the image
+        image_path = None
+        if image and allowed_file(image.filename):
+            filename = secure_filename(image.filename)
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image.save(image_path)
+        elif image:
+            flash('Invalid file type. Only PNG, JPG, and JPEG files are allowed.', 'error')
+            return redirect(url_for('new_resource'))
+
         try:
-            # Save the resource
-            create_resource(user_id, title, description, category, availability)
+            # Save the resource in the database (pass image_path if needed)
+            create_resource(user_id, title, description, category, availability, image_path)
             flash('Resource added successfully!', 'success')
             return redirect(url_for('list_resources'))
         except Exception as e:

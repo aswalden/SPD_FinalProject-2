@@ -35,7 +35,7 @@ def init_db():
             user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             description TEXT,
-            images TEXT,
+            image_path TEXT,
             category TEXT,
             availability TEXT,
             date_posted TEXT NOT NULL,

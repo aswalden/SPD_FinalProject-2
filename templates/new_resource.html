@@ -19,7 +19,7 @@
     {% endwith %}
 
     <!-- Resource Form -->
-    <form action="{{ url_for('new_resource') }}" method="POST" class="needs-validation" novalidate>
+    <form action="{{ url_for('new_resource') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
         <!-- Title -->
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
@@ -51,6 +51,13 @@
         <div class="mb-3">
             <label for="description" class="form-label">Description</label>
             <textarea id="description" name="description" class="form-control" rows="5"></textarea>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="mb-3">
+            <label for="image" class="form-label">Upload Image</label>
+            <input type="file" id="image" name="image" class="form-control" accept="image/*">
+            <div class="form-text">Accepted formats: JPG, JPEG, PNG.</div>
         </div>
 
         <!-- Actions -->
