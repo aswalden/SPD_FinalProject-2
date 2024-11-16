@@ -106,7 +106,7 @@ def get_user_by_id(user_id):
     return get_db().execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
 # Resource-related functions
-def create_resource(user_id, title, description, category, availability):
+def create_resource(user_id, title, description, category, availability, image_path):
     db = get_db()
     db.execute(
         "INSERT INTO resources (user_id, title, description, category, availability, date_posted) VALUES (?, ?, ?, ?, ?, datetime('now'))",

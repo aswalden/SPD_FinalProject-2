@@ -6,15 +6,22 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-body">
+            <!-- Display Resource Image if available -->
+            {% if resource.image_path %}
+                <img src="{{ url_for('static', filename=resource.image_path.split('static/')[1]) }}" 
+                     alt="Resource Image" 
+                     class="img-fluid rounded mb-4" 
+                     style="max-height: 300px; object-fit: cover;">
+            {% endif %}
+            
             <h2 class="card-title">{{ resource.title }}</h2>
 
             <p class="card-text"><strong>Category:</strong> {{ resource.category }}</p>
             <p class="card-text"><strong>Availability:</strong> {{ resource.availability }}</p>
             <p class="card-text"><strong>Description:</strong> {{ resource.description }}</p>
             <p class="card-text"><strong>Date Posted:</strong> {{ resource.date_posted }}</p>
-            
-                <a href="{{ url_for('list_resources') }}" class="btn btn-secondary">Back to All Resources</a>
-            </div>
+
+            <a href="{{ url_for('list_resources') }}" class="btn btn-secondary">Back to All Resources</a>
         </div>
     </div>
 </div>
