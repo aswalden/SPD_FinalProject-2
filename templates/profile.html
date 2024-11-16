@@ -128,33 +128,51 @@
         <div class="col-md-12 mb-5">
             <h2>Your Bookings</h2>
 
+            <!-- Booked Resources -->
             <h4>Booked Resources</h4>
             {% if resource_bookings %}
                 <ul>
                     {% for booking in resource_bookings %}
-                    <li>{{ booking.title }} (Booked on {{ booking.booking_date }})</li>
+                    <li>
+                        {{ booking.title }} (Booked on {{ booking.booking_date }})
+                        <form action="{{ url_for('unbook_resource', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
+                        </form>
+                    </li>
                     {% endfor %}
                 </ul>
             {% else %}
                 <p class="text-muted">You have not booked any resources yet.</p>
             {% endif %}
 
+            <!-- Booked Spaces -->
             <h4>Booked Spaces</h4>
             {% if space_bookings %}
                 <ul>
                     {% for booking in space_bookings %}
-                    <li>{{ booking.name }} (Booked on {{ booking.booking_date }})</li>
+                    <li>
+                        {{ booking.name }} (Booked on {{ booking.booking_date }})
+                        <form action="{{ url_for('unbook_space', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
+                        </form>
+                    </li>
                     {% endfor %}
                 </ul>
             {% else %}
                 <p class="text-muted">You have not booked any spaces yet.</p>
             {% endif %}
 
+            <!-- Booked Events -->
             <h4>Booked Events</h4>
             {% if event_bookings %}
                 <ul>
                     {% for booking in event_bookings %}
-                    <li>{{ booking.name }} (Booked on {{ booking.booking_date }})</li>
+                    <li>
+                        {{ booking.name }} (Booked on {{ booking.booking_date }})
+                        <form action="{{ url_for('unbook_event', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
+                        </form>
+                    </li>
                     {% endfor %}
                 </ul>
             {% else %}

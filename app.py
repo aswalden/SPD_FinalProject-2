@@ -753,6 +753,66 @@ def book_event_route(event_id):
 
     return redirect(url_for('view_event', event_id=event_id))
 
+@app.route('/resource/unbook/<int:booking_id>', methods=['POST'])
+def unbook_resource(booking_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("Please log in to unbook this resource.", "error")
+        return redirect(url_for('login'))
+
+    try:
+        db = get_db()
+        db.execute(
+            "DELETE FROM resource_bookings WHERE booking_id = ? AND user_id = ?",
+            (booking_id, user_id)
+        )
+        db.commit()
+        flash("Resource booking canceled successfully.", "success")
+    except Exception as e:
+        flash("An error occurred while canceling the booking. Please try again.", "error")
+
+    return redirect(url_for('profile'))
+
+@app.route('/space/unbook/<int:booking_id>', methods=['POST'])
+def unbook_space(booking_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("Please log in to unbook this space.", "error")
+        return redirect(url_for('login'))
+
+    try:
+        db = get_db()
+        db.execute(
+            "DELETE FROM space_bookings WHERE booking_id = ? AND user_id = ?",
+            (booking_id, user_id)
+        )
+        db.commit()
+        flash("Space booking canceled successfully.", "success")
+    except Exception as e:
+        flash("An error occurred while canceling the booking. Please try again.", "error")
+
+    return redirect(url_for('profile'))
+
+@app.route('/event/unbook/<int:booking_id>', methods=['POST'])
+def unbook_event(booking_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("Please log in to unbook this event.", "error")
+        return redirect(url_for('login'))
+
+    try:
+        db = get_db()
+        db.execute(
+            "DELETE FROM event_bookings WHERE booking_id = ? AND user_id = ?",
+            (booking_id, user_id)
+        )
+        db.commit()
+        flash("Event booking canceled successfully.", "success")
+    except Exception as e:
+        flash("An error occurred while canceling the booking. Please try again.", "error")
+
+    return redirect(url_for('profile'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
