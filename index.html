@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="text-center">
+        <h2 class="mb-4">Welcome to the Smart Neighborhood Exchange</h2>
+    </div>
+
+    <!-- Recent Listings Section -->
+    <h3 class="my-4">Recent Listings</h3>
+    {% if recent_resources %}
+        <div class="row">
+            {% for resource in recent_resources %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ resource.title }}</h5>
+                        <p class="card-text"><strong>Category:</strong> {{ resource.category }}</p>
+                        <p class="card-text"><strong>Availability:</strong> {{ resource.availability }}</p>
+                        <!-- Only allow "View Details" -->
+                        <a href="{{ url_for('view_resource', id=resource.resource_id) }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No recent listings available.</p>
+    {% endif %}
+
+    <!-- Top-Rated Reviews Section -->
+    <h3 class="my-4">Top-Rated Reviews</h3>
+    {% if top_reviews %}
+        <div class="row">
+            {% for review in top_reviews %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Reviewer: {{ review.reviewer_name }}</h5>
+                        <p class="card-text"><strong>Rating:</strong> {{ review.rating }} / 5</p>
+                        <p class="card-text"><strong>Comment:</strong> {{ review.comment }}</p>
+                        <p class="text-muted"><em>Posted on {{ review.timestamp }}</em></p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No top-rated reviews available.</p>
+    {% endif %}
+</div>
+{% endblock %}

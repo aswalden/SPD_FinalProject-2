@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Your Inbox</h2>
+
+    <div class="row">
+        <!-- Conversations Section -->
+        <div class="col-md-8">
+            <h4>Conversations</h4>
+            {% if conversations %}
+                <ul class="list-group">
+                    {% for conversation in conversations %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('conversation', user_id=conversation['id']) }}" class="text-decoration-none text-dark">
+                                <strong>{{ conversation['name'] }}</strong>
+                            </a>
+                            <span class="text-muted small">Last message: {{ conversation['last_message'] }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">You have no conversations yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Send a New Message Section -->
+        <div class="col-md-4">
+            <h4>Send a New Message</h4>
+            <form action="{{ url_for('send_message_route', receiver_id=receiver.id) }}" method="POST" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="receiver_name" class="form-label">Recipient</label>
+                    <input type="text" id="receiver_name" name="receiver_name" class="form-control" placeholder="Search recipient by name" required>
+                    <input type="hidden" id="receiver_id" name="receiver_id">
+                    <ul id="autocomplete-list" class="list-group mt-2"></ul>
+                </div>
+                <div class="mb-3">
+                    <label for="content" class="form-label">Message</label>
+                    <textarea id="content" name="content" class="form-control" rows="4" placeholder="Type your message here" required></textarea>
+                    <div class="invalid-feedback">Please enter your message.</div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Send Message</button>
+            </form>            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const receiverNameInput = document.getElementById('receiver_name');
+    const receiverIdInput = document.getElementById('receiver_id');
+    const autocompleteList = document.getElementById('autocomplete-list');
+
+    receiverNameInput.addEventListener('input', async function() {
+        const query = receiverNameInput.value;
+
+        if (query.length < 2) {
+            autocompleteList.innerHTML = ''; // Clear suggestions
+            return;
+        }
+
+        // Fetch matching users from the server
+        const response = await fetch(`/search_users?q=${encodeURIComponent(query)}`);
+        const results = await response.json();
+
+        // Display suggestions
+        autocompleteList.innerHTML = '';
+        results.forEach(user => {
+            const item = document.createElement('li');
+            item.className = 'list-group-item list-group-item-action';
+            item.textContent = user.name;
+            item.dataset.userId = user.id;
+
+            item.addEventListener('click', function() {
+                receiverNameInput.value = user.name;
+                receiverIdInput.value = user.id;
+                autocompleteList.innerHTML = ''; // Clear suggestions
+            });
+
+            autocompleteList.appendChild(item);
+        });
+    });
+
+    // Validate before submitting the form
+    document.querySelector('form').addEventListener('submit', function(event) {
+        if (!receiverIdInput.value) {
+            event.preventDefault();
+            alert("Please select a recipient from the suggestions.");
+        }
+    });
+
+    // Close suggestions if clicking outside the input
+    document.addEventListener('click', function(event) {
+        if (!autocompleteList.contains(event.target) && event.target !== receiverNameInput) {
+            autocompleteList.innerHTML = '';
+        }
+    });
+});
+</script>
+{% endblock %}
