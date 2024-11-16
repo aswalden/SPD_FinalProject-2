@@ -169,18 +169,18 @@ def new_resource():
             return redirect(url_for('new_resource'))
 
         # Validate and save the image
-        image_path = None
+        images = None
         if image and allowed_file(image.filename):
             filename = secure_filename(image.filename)
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            image.save(image_path)
+            images = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image.save(images)
         elif image:
             flash('Invalid file type. Only PNG, JPG, and JPEG files are allowed.', 'error')
             return redirect(url_for('new_resource'))
 
         try:
-            # Save the resource in the database (pass image_path if needed)
-            create_resource(user_id, title, description, category, availability, image_path)
+            # Save the resource in the database (pass images if needed)
+            create_resource(user_id, title, description, category, availability, images)
             flash('Resource added successfully!', 'success')
             return redirect(url_for('list_resources'))
         except Exception as e:
