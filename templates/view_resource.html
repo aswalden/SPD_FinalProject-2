@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}View Resource{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title">{{ resource.title }}</h2>
+
+            <p class="card-text"><strong>Category:</strong> {{ resource.category }}</p>
+            <p class="card-text"><strong>Availability:</strong> {{ resource.availability }}</p>
+            <p class="card-text"><strong>Description:</strong> {{ resource.description }}</p>
+            <p class="card-text"><strong>Date Posted:</strong> {{ resource.date_posted }}</p>
+            
+                <a href="{{ url_for('list_resources') }}" class="btn btn-secondary">Back to All Resources</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

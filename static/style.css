@@ -1,0 +1,302 @@
+/* Reset some default styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Global Font */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #2E3944; /* Primary text color */
+    background-color: #D3D9D4; /* Light background color */
+}
+
+/* Navbar Brand and Links */
+.navbar-brand, .nav-link {
+    color: #D3D9D4 !important; /* Light text color */
+      
+}
+
+.pacifico-regular {
+    font-family: "Pacifico", cursive;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+
+.navbar-brand:hover, .nav-link:hover {
+    color: #124E66 !important; /* Accent color */
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    background-color: #2E3944; /* Darker dropdown background */
+    border-radius: 4px;
+}
+
+.dropdown-item {
+    color: #D3D9D4; /* Light text */
+}
+
+.dropdown-item:hover {
+    background-color: #124E66; /* Accent color */
+}
+
+/* Main Content */
+main {
+    max-width: 800px;
+    margin: 2em auto;
+    padding: 1em;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: #2E3944;
+}
+
+/* Footer */
+footer {
+    background-color: #212A31;
+    color: #D3D9D4;
+    padding: 1em 0;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    color: #124E66; /* Accent color */
+}
+
+.card-text {
+    color: #2E3944; /* Main text color */
+}
+
+.btn-primary {
+    background-color: #124E66;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #2E3944;
+}
+
+/* Card Customization */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    color: #124E66; /* Accent color */
+}
+
+.card-footer {
+    background-color: #f8f9fa; /* Light gray */
+}
+
+/* Button Customization */
+.btn-info {
+    background-color: #124E66;
+    border: none;
+}
+
+.btn-info:hover {
+    background-color: #2E3944;
+}
+
+.btn-warning {
+    color: #212A31;
+}
+
+.btn-warning:hover {
+    background-color: #748D92;
+}
+
+/* Form Customization */
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #748D92; /* Light gray-blue border */
+}
+
+.form-control:focus {
+    border-color: #124E66; /* Accent color on focus */
+    box-shadow: 0 0 5px rgba(18, 78, 102, 0.5); /* Soft focus glow */
+}
+
+.btn-primary {
+    background-color: #124E66;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #2E3944;
+}
+
+.btn-secondary {
+    background-color: #748D92;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #2E3944;
+}
+
+/* Custom Textarea Focus Styles */
+textarea.form-control:focus {
+    border-color: #124E66; /* Accent color */
+    box-shadow: 0 0 5px rgba(18, 78, 102, 0.5); /* Soft glow */
+}
+
+/* Textarea Styling */
+textarea.form-control {
+    resize: vertical; /* Allow vertical resizing only */
+}
+
+textarea.form-control:focus {
+    border-color: #124E66; /* Accent color */
+    box-shadow: 0 0 5px rgba(18, 78, 102, 0.5); /* Soft glow on focus */
+}
+
+/* Button Spacing */
+.d-flex > .btn {
+    margin-left: 5px;
+    margin-right: 5px; /* Even spacing between buttons */
+}
+
+/* Chat Bubble Adjustments */
+.card.bg-primary {
+    border-radius: 12px 12px 0 12px; /* Rounded corners for sent messages */
+}
+
+.card.bg-light {
+    border-radius: 12px 12px 12px 0; /* Rounded corners for received messages */
+}
+
+/* Responsive Message Container */
+.messages {
+    max-height: 500px; /* Limit height for scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+/* Custom Textarea Focus Styles */
+textarea.form-control:focus {
+    border-color: #124E66;
+    box-shadow: 0 0 5px rgba(18, 78, 102, 0.5);
+}
+
+/* Custom Form Input Focus Styles */
+.form-control:focus {
+    border-color: #124E66;
+    box-shadow: 0 0 5px rgba(18, 78, 102, 0.5);
+}
+
+/* Flash Message Styling */
+.alert {
+    border-radius: 5px;
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: #124E66;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #2E3944;
+}
+
+/* Profile Card Styling */
+.profile-card {
+    margin: 0 auto; /* Center horizontally */
+    max-width: 600px; /* Limit width */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border-radius: 8px; /* Rounded corners */
+    background-color: #ffffff; /* White background */
+}
+
+/* Profile Image Styling */
+.profile-card img {
+    margin: 0 auto; /* Center the image */
+    display: block;
+}
+
+/* Section Spacing */
+.row + .row {
+    margin-top: 2rem; /* Add spacing between rows */
+}
+
+/* Flash Message Styling */
+.alert {
+    border-radius: 5px;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    color: #124E66; /* Accent color */
+}
+
+.card-footer {
+    background-color: #f8f9fa; /* Light gray */
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: #124E66;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #2E3944;
+}
+
+.btn-info {
+    background-color: #124E66;
+    border: none;
+}
+
+.btn-info:hover {
+    background-color: #2E3944;
+}
+
+.btn-warning {
+    color: #212A31;
+}
+
+.btn-warning:hover {
+    background-color: #748D92;
+}
+
+.btn-danger {
+    background-color: #d9534f;
+}
+
+.btn-danger:hover {
+    background-color: #c9302c;
+}
+
+
+
+/* Responsive Layout */
+@media (max-width: 600px) {
+    .navbar {
+        text-align: center;
+    }
+
+    .nav-item {
+        margin: 5px 0;
+    }
+
+    button {
+        width: 100%;
+    }
+}
