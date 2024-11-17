@@ -2,6 +2,8 @@
 import sqlite3
 from flask import g
 from werkzeug.security import generate_password_hash, check_password_hash
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime, timedelta
 
 DATABASE = 'smart_neighborhood.db'
 
@@ -48,6 +50,7 @@ def init_db():
             receiver_id INTEGER NOT NULL,
             content TEXT NOT NULL,
             timestamp TEXT NOT NULL,
+            is_system_message INTEGER DEFAULT 0,
             FOREIGN KEY (sender_id) REFERENCES users (id) ON DELETE CASCADE,
             FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE
         );
@@ -205,9 +208,9 @@ def send_message(sender_id, receiver_id, content):
 
 def get_inbox(user_id):
     """Retrieve a list of users the current user has conversations with."""
-    conn = get_db()
+    db = get_db()  # Use Flask's connection manager
     try:
-        cursor = conn.cursor()
+        cursor = db.cursor()
         cursor.execute("""
             SELECT u.id, u.name, MAX(m.timestamp) as last_message
             FROM messages m
@@ -219,9 +222,8 @@ def get_inbox(user_id):
         conversations = cursor.fetchall()
         return conversations
     except Exception as e:
-        raise
-    finally:
-        conn.close()
+        raise  # Let the exception bubble up for better error logging
+
 
 
 def get_conversation(sender_id, receiver_id):
@@ -370,10 +372,87 @@ def book_event(user_id, event_id, booking_date):
         raise Exception(f"Unexpected error in book_event: {e}")
 
 
-
-
 def get_event_bookings_by_user(user_id):
     return get_db().execute(
         "SELECT eb.*, e.name FROM event_bookings eb JOIN events e ON eb.event_id = e.event_id WHERE eb.user_id = ?",
         (user_id,)
     ).fetchall()
+
+
+def send_system_message(receiver_id, content):
+    try:
+        print(f"Sending system message to user_id={receiver_id}: {content}")
+        db = get_db()
+        db.execute(
+            """
+            INSERT INTO messages (sender_id, receiver_id, content, timestamp, is_system_message)
+            VALUES (NULL, ?, ?, datetime('now'), 1)
+            """,
+            (receiver_id, content)
+        )
+        db.commit()
+        print(f"Message sent to user_id={receiver_id}: {content}")
+    except Exception as e:
+        print(f"Error sending message: {e}")
+
+
+
+def check_upcoming_bookings():
+    db = get_db()
+    current_date = datetime.now().strftime('%Y-%m-%d')
+
+    try:
+        # Debugging: Print current date
+        print(f"Current Date: {current_date}")
+
+        # Check all future resource bookings
+        resources = db.execute("""
+            SELECT rb.user_id, r.title, rb.booking_date
+            FROM resource_bookings rb
+            JOIN resources r ON rb.resource_id = r.resource_id
+            WHERE rb.booking_date >= ?
+        """, (current_date,)).fetchall()
+
+        print(f"Resource bookings found: {len(resources)}")  # Debugging
+        for resource in resources:
+            print(f"Sending message for resource booking: {resource['title']} on {resource['booking_date']}")  # Debugging
+            send_system_message(
+                receiver_id=resource['user_id'],
+                content=f"Reminder: Your resource booking '{resource['title']}' is scheduled for {resource['booking_date']}."
+            )
+
+        # Check all future space bookings
+        spaces = db.execute("""
+            SELECT sb.user_id, s.name, sb.booking_date
+            FROM space_bookings sb
+            JOIN spaces s ON sb.space_id = s.space_id
+            WHERE sb.booking_date >= ?
+        """, (current_date,)).fetchall()
+
+        print(f"Space bookings found: {len(spaces)}")  # Debugging
+        for space in spaces:
+            print(f"Sending message for space booking: {space['name']} on {space['booking_date']}")  # Debugging
+            send_system_message(
+                receiver_id=space['user_id'],
+                content=f"Reminder: Your space booking '{space['name']}' is scheduled for {space['booking_date']}."
+            )
+
+        # Check all future event bookings
+        events = db.execute("""
+            SELECT eb.user_id, e.name, e.date
+            FROM event_bookings eb
+            JOIN events e ON eb.event_id = e.event_id
+            WHERE e.date >= ?
+        """, (current_date,)).fetchall()
+
+        print(f"Event bookings found: {len(events)}")  # Debugging
+        for event in events:
+            print(f"Sending message for event booking: {event['name']} on {event['date']}")  # Debugging
+            send_system_message(
+                receiver_id=event['user_id'],
+                content=f"Reminder: Your event '{event['name']}' is scheduled for {event['date']}."
+            )
+
+    except Exception as e:
+        print(f"Error checking upcoming bookings: {e}")
+        raise

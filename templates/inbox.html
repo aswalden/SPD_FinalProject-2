@@ -14,9 +14,15 @@
                 <ul class="list-group">
                     {% for conversation in conversations %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="{{ url_for('conversation', user_id=conversation['id']) }}" class="text-decoration-none text-dark">
-                                <strong>{{ conversation['name'] }}</strong>
-                            </a>
+                            {% if conversation['name'] == 'System Notifications' %}
+                                <a href="{{ url_for('system_notifications') }}" class="text-decoration-none text-dark">
+                                    <strong>{{ conversation['name'] }}</strong>
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('conversation', user_id=conversation['id']) }}" class="text-decoration-none text-dark">
+                                    <strong>{{ conversation['name'] }}</strong>
+                                </a>
+                            {% endif %}
                             <span class="text-muted small">Last message: {{ conversation['last_message'] }}</span>
                         </li>
                     {% endfor %}
@@ -26,42 +32,64 @@
             {% endif %}
         </div>
 
-        <!-- Send a New Message Section -->
+        <!-- System Messages Section -->
         <div class="col-md-4">
+            <h4>System Notifications</h4>
+            {% if system_messages %}
+                <ul class="list-group">
+                    {% for message in system_messages %}
+                        <li class="list-group-item">
+                            <strong>{{ message['content'] }}</strong>
+                            <br>
+                            <small class="text-muted">Received on {{ message['timestamp'] }}</small>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No system notifications at the moment.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- Send a New Message Section -->
+    <div class="row">
+        <div class="col-md-12">
             <h4>Send a New Message</h4>
 
             <!-- Search Form -->
             <form action="{{ url_for('inbox') }}" method="GET" class="mb-3">
                 <label for="search_recipient" class="form-label">Search for Recipient</label>
-                <input type="text" id="search_recipient" name="search_recipient" class="form-control" 
+                <input type="text" id="search_recipient" name="search_recipient" class="form-control"
                        placeholder="Enter recipient's name" value="{{ request.args.get('search_recipient', '') }}">
                 <button type="submit" class="btn btn-secondary mt-2 w-100">Search</button>
             </form>
 
             {% if recipients %}
-            <!-- Recipient Selection and Message Form -->
-            <form id="messageForm" action="{{ url_for('send_message_route', receiver_id=0) }}" method="POST" class="needs-validation" novalidate>
-                <div class="mb-3">
-                    <label for="receiver_id" class="form-label">Select Recipient</label>
-                    <select id="receiver_id" name="receiver_id" class="form-control" required>
-                        <option value="">-- Select a recipient --</option>
-                        {% for recipient in recipients %}
-                        <option value="{{ recipient.id }}">{{ recipient.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="invalid-feedback">Please select a recipient.</div>
-                </div>
-                <div class="mb-3">
-                    <label for="content" class="form-label">Message</label>
-                    <textarea id="content" name="content" class="form-control" rows="4" placeholder="Type your message here" required></textarea>
-                    <div class="invalid-feedback">Please enter your message.</div>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Send Message</button>
-            </form>            
+                <!-- Recipient Selection and Message Form -->
+                <form id="messageForm" action="{{ url_for('send_message_route', receiver_id=0) }}" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="receiver_id" class="form-label">Select Recipient</label>
+                        <select id="receiver_id" name="receiver_id" class="form-control" required>
+                            <option value="">-- Select a recipient --</option>
+                            {% for recipient in recipients %}
+                                <option value="{{ recipient.id }}">{{ recipient.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Please select a recipient.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Message</label>
+                        <textarea id="content" name="content" class="form-control" rows="4" placeholder="Type your message here" required></textarea>
+                        <div class="invalid-feedback">Please enter your message.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Send Message</button>
+                </form>
             {% endif %}
 
             {% if not recipients and request.args.get('search_recipient') %}
-            <p class="text-muted">No recipients found. Please refine your search.</p>
+                <p class="text-muted">No recipients found. Please refine your search.</p>
             {% endif %}
         </div>
     </div>
@@ -91,5 +119,4 @@
         });
     });
 </script>
-
 {% endblock %}

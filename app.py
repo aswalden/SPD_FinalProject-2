@@ -1,22 +1,42 @@
 # app.py
 import os
 import sqlite3
+import atexit
+from apscheduler.schedulers.background import BackgroundScheduler
 from config import DevelopmentConfig, ProductionConfig
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timedelta
 from database import (
     init_db, close_db, create_user, get_user_by_email, get_user_by_id,
     create_resource, get_recent_resources, get_resource_by_id, send_message, update_resource,
     delete_resource, get_all_resources, get_top_reviews, get_conversation, get_inbox, 
     create_space, get_all_spaces, get_space_by_id, create_event, get_all_events, get_event_by_id,
     get_db, get_resources_by_user, get_events_by_user, get_spaces_by_user, book_resource, book_event,
-    book_space, get_event_bookings_by_user, get_resource_bookings_by_user, get_space_bookings_by_user
+    book_space, get_event_bookings_by_user, get_resource_bookings_by_user, get_space_bookings_by_user,
+    check_upcoming_bookings, send_system_message, check_upcoming_bookings
 
 )
 
+def schedule_notifications(app):
+    with app.app_context():
+        print(f"Running check_upcoming_bookings at {datetime.now()}")
+        try:
+            check_upcoming_bookings()
+            print("Notifications sent successfully.")
+        except Exception as e:
+            print(f"Error while running check_upcoming_bookings: {e}")
+
 app = Flask(__name__)
+
+# Initialize the scheduler after the app instance is created
+scheduler = BackgroundScheduler()
+scheduler.add_job(lambda: schedule_notifications(app), 'interval', seconds=30)  # Run every 30 seconds for testing
+scheduler.start()
+
+# Ensure scheduler stops when the application shuts down
+atexit.register(lambda: scheduler.shutdown(wait=False))
 
 # Configuration for file uploads
 UPLOAD_FOLDER = 'static/uploads/profile_images'
@@ -278,19 +298,47 @@ def inbox():
         flash("Please log in to view your inbox.", "error")
         return redirect(url_for('login'))
 
-    # Handle GET for search
-    search_query = request.args.get('search_recipient', '').strip()
-    recipients = []
-    if search_query:
-        recipients = get_db().execute(
-            "SELECT id, name FROM users WHERE name LIKE ? LIMIT 10",
-            (f"%{search_query}%",)
+    try:
+        db = get_db()  # Ensure database connection is active
+
+        # Handle GET for search
+        search_query = request.args.get('search_recipient', '').strip()
+        recipients = []
+        if search_query:
+            recipients = db.execute(
+                "SELECT id, name FROM users WHERE name LIKE ? LIMIT 10",
+                (f"%{search_query}%",)
+            ).fetchall()
+
+        # Fetch conversations
+        conversations = get_inbox(user_id)
+
+        # Fetch system messages
+        system_messages = db.execute(
+            """
+            SELECT content, timestamp
+            FROM messages
+            WHERE receiver_id = ? AND is_system_message = 1
+            ORDER BY timestamp DESC
+            """,
+            (user_id,)
         ).fetchall()
 
-    # Fetch conversations
-    conversations = get_inbox(user_id)
+        # Render the inbox template
+        return render_template(
+            'inbox.html',
+            conversations=conversations,
+            recipients=recipients,
+            system_messages=system_messages,
+        )
 
-    return render_template('inbox.html', conversations=conversations, recipients=recipients)
+    except Exception as e:
+        # Log the error and redirect with an error message
+        app.logger.error(f"Error in inbox route: {e}")
+        flash("An error occurred while loading your inbox. Please try again.", "error")
+        return redirect(url_for('profile'))
+
+
 
 
 @app.route('/search_users', methods=['GET'])
@@ -812,6 +860,53 @@ def unbook_event(booking_id):
         flash("An error occurred while canceling the booking. Please try again.", "error")
 
     return redirect(url_for('profile'))
+
+def check_upcoming_bookings():
+    db = get_db()
+    current_date = datetime.now()
+    upcoming_date = (current_date + timedelta(days=1)).strftime('%Y-%m-%d')
+
+    # Check upcoming resource bookings
+    resources = db.execute("""
+        SELECT rb.user_id, r.title, rb.booking_date 
+        FROM resource_bookings rb 
+        JOIN resources r ON rb.resource_id = r.resource_id 
+        WHERE rb.booking_date = ?
+    """, (upcoming_date,)).fetchall()
+
+    for resource in resources:
+        send_system_message(
+            receiver_id=resource['user_id'],
+            content=f"Reminder: Your resource booking '{resource['title']}' is scheduled for tomorrow."
+        )
+
+    # Check upcoming space bookings
+    spaces = db.execute("""
+        SELECT sb.user_id, s.name, sb.booking_date 
+        FROM space_bookings sb 
+        JOIN spaces s ON sb.space_id = s.space_id 
+        WHERE sb.booking_date = ?
+    """, (upcoming_date,)).fetchall()
+
+    for space in spaces:
+        send_system_message(
+            receiver_id=space['user_id'],
+            content=f"Reminder: Your space booking '{space['name']}' is scheduled for tomorrow."
+        )
+
+    # Check upcoming event bookings
+    events = db.execute("""
+        SELECT eb.user_id, e.name, e.date 
+        FROM event_bookings eb 
+        JOIN events e ON eb.event_id = e.event_id 
+        WHERE e.date = ?
+    """, (upcoming_date,)).fetchall()
+
+    for event in events:
+        send_system_message(
+            receiver_id=event['user_id'],
+            content=f"Reminder: Your event '{event['name']}' is scheduled for tomorrow."
+        )
 
 
 if __name__ == '__main__':
