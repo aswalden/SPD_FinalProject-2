@@ -15,7 +15,7 @@ from database import (
     create_space, get_all_spaces, get_space_by_id, create_event, get_all_events, get_event_by_id,
     get_db, get_resources_by_user, get_events_by_user, get_spaces_by_user, book_resource, book_event,
     book_space, get_event_bookings_by_user, get_resource_bookings_by_user, get_space_bookings_by_user,
-    check_upcoming_bookings, send_system_message, check_upcoming_bookings
+    check_upcoming_bookings, send_system_message, check_upcoming_bookings, get_top_users
 
 )
 
@@ -68,9 +68,19 @@ def shutdown_session(exception=None):
 @app.route('/')
 @app.route('/index')
 def index():
+    # Fetch data for the home page
     recent_resources = get_recent_resources()
     top_reviews = get_top_reviews()
-    return render_template('index.html', recent_resources=recent_resources, top_reviews=top_reviews)
+    top_users = get_top_users()  # Fetch top-rated users from the database
+    
+    # Render the index template with the fetched data
+    return render_template(
+        'index.html',
+        recent_resources=recent_resources,
+        top_reviews=top_reviews,
+        top_users=top_users
+    )
+
 
 @app.route('/registration')
 def registration():
@@ -907,6 +917,28 @@ def check_upcoming_bookings():
             receiver_id=event['user_id'],
             content=f"Reminder: Your event '{event['name']}' is scheduled for tomorrow."
         )
+
+@app.route('/user/<int:user_id>')
+def view_user_profile(user_id):
+    user = get_user_by_id(user_id)  # Fetch user details
+    if not user:
+        flash("User not found.", "error")
+        return redirect(url_for('index'))
+    
+    resources = get_resources_by_user(user_id)
+    events = get_events_by_user(user_id)
+    spaces = get_spaces_by_user(user_id)
+    
+    # Pass user's name to the render template
+    return render_template(
+        'user_profile.html', 
+        user=user, 
+        resources=resources, 
+        events=events, 
+        spaces=spaces,
+        page_title=f"{user['name']}'s Profile"
+    )
+
 
 
 if __name__ == '__main__':

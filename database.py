@@ -456,3 +456,16 @@ def check_upcoming_bookings():
     except Exception as e:
         print(f"Error checking upcoming bookings: {e}")
         raise
+
+def get_top_users(limit=5):
+    """Fetch top-rated users."""
+    return get_db().execute(
+        """
+        SELECT id, name, email, profile_image, rating
+        FROM users
+        WHERE rating IS NOT NULL
+        ORDER BY rating DESC, id ASC
+        LIMIT ?
+        """,
+        (limit,)
+    ).fetchall()

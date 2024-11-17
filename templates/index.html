@@ -30,25 +30,32 @@
         <p class="text-muted">No recent listings available.</p>
     {% endif %}
 
-    <!-- Top-Rated Reviews Section -->
-    <h3 class="my-4">Top-Rated Reviews</h3>
-    {% if top_reviews %}
-        <div class="row">
-            {% for review in top_reviews %}
-            <div class="col-md-4 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Reviewer: {{ review.reviewer_name }}</h5>
-                        <p class="card-text"><strong>Rating:</strong> {{ review.rating }} / 5</p>
-                        <p class="card-text"><strong>Comment:</strong> {{ review.comment }}</p>
-                        <p class="text-muted"><em>Posted on {{ review.timestamp }}</em></p>
-                    </div>
+<!-- Top-Rated Users Section -->
+<h3 class="my-4">Top-Rated Users</h3>
+{% if top_users %}
+    <div class="row">
+        {% for user in top_users %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image }}" alt="{{ user.name }}'s Profile Picture" class="img-fluid rounded-circle mb-3" width="100">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='default-profile.png') }}" alt="Default Profile Picture" class="img-fluid rounded-circle mb-3" width="100">
+                    {% endif %}
+                    <h5 class="card-title">{{ user.name }}</h5>
+                    <p class="card-text"><strong>Rating:</strong> {{ user.rating|round(1) }} / 5</p>
+                    <p class="text-muted"><em>Email:</em> {{ user.email }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('view_user_profile', user_id=user.id) }}" class="btn btn-primary btn-sm">View Profile</a>
                 </div>
             </div>
-            {% endfor %}
         </div>
-    {% else %}
-        <p class="text-muted">No top-rated reviews available.</p>
-    {% endif %}
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">No top-rated users available.</p>
+{% endif %}
 </div>
 {% endblock %}
