@@ -124,61 +124,87 @@
             {% endif %}
         </div>
 
-        <!-- Bookings Section -->
-        <div class="col-md-12 mb-5">
-            <h2>Your Bookings</h2>
+<!-- Bookings Section -->
+<div class="col-md-12 mb-5">
+    <h2>Your Bookings</h2>
 
-            <!-- Booked Resources -->
-            <h4>Booked Resources</h4>
-            {% if resource_bookings %}
-                <ul>
-                    {% for booking in resource_bookings %}
-                    <li>
-                        {{ booking.title }} (Booked on {{ booking.booking_date }})
-                        <form action="{{ url_for('unbook_resource', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
-                        </form>
-                    </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted">You have not booked any resources yet.</p>
-            {% endif %}
+    <!-- Booked Resources -->
+    <div class="mb-4">
+        <h4>Booked Resources</h4>
+        {% if resource_bookings %}
+            <div class="row">
+                {% for booking in resource_bookings %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ booking.title }}</h5>
+                                <p class="card-text"><strong>Booked On:</strong> {{ booking.booking_date }}</p>
+                            </div>
+                            <div class="card-footer text-end">
+                                <form action="{{ url_for('unbook_resource', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">You have not booked any resources yet.</p>
+        {% endif %}
+    </div>
 
-            <!-- Booked Spaces -->
-            <h4>Booked Spaces</h4>
-            {% if space_bookings %}
-                <ul>
-                    {% for booking in space_bookings %}
-                    <li>
-                        {{ booking.name }} (Booked on {{ booking.booking_date }})
-                        <form action="{{ url_for('unbook_space', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
-                        </form>
-                    </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted">You have not booked any spaces yet.</p>
-            {% endif %}
+    <!-- Booked Spaces -->
+    <div class="mb-4">
+        <h4>Booked Spaces</h4>
+        {% if space_bookings %}
+            <div class="row">
+                {% for booking in space_bookings %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ booking.name }}</h5>
+                                <p class="card-text"><strong>Booked On:</strong> {{ booking.booking_date }}</p>
+                            </div>
+                            <div class="card-footer text-end">
+                                <form action="{{ url_for('unbook_space', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">You have not booked any spaces yet.</p>
+        {% endif %}
+    </div>
 
-            <!-- Booked Events -->
-            <h4>Booked Events</h4>
-            {% if event_bookings %}
-                <ul>
-                    {% for booking in event_bookings %}
-                    <li>
-                        {{ booking.name }} (Booked on {{ booking.booking_date }})
-                        <form action="{{ url_for('unbook_event', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
-                        </form>
-                    </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted">You have not booked any events yet.</p>
-            {% endif %}
-        </div>
+    <!-- Booked Events -->
+    <div class="mb-4">
+        <h4>Booked Events</h4>
+        {% if event_bookings %}
+            <div class="row">
+                {% for booking in event_bookings %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ booking.name }}</h5>
+                                <p class="card-text"><strong>Booked On:</strong> {{ booking.booking_date }}</p>
+                            </div>
+                            <div class="card-footer text-end">
+                                <form action="{{ url_for('unbook_event', booking_id=booking.booking_id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Unbook</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">You have not booked any events yet.</p>
+        {% endif %}
     </div>
 </div>
+
 {% endblock %}
